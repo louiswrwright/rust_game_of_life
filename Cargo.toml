@@ -1,0 +1,6 @@
+[package]
+name = "hi"
+version = "0.1.0"
+authors = ["ESENDEX\\louis.wright <louis.wright@esendex.com>"]
+
+[dependencies]
