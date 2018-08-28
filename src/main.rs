@@ -25,56 +25,58 @@ fn main() {
 }
 
 fn initialize_grid(mut grid: &mut [[Cell; 8]; 8], start_position_x: usize, start_position_y: usize){
-//    let mut cell: Cell = ((*grid)[start_position_x][start_position_y]).on = true;
-    ((*grid)[start_position_x][start_position_y]).on = true;
 
-//    cell.on = true;
+    //BLINKER
+//    ((*grid)[start_position_x][start_position_y]).on = true;
+//    ((*grid)[start_position_x-1][start_position_y]).on = true;
+//    ((*grid)[start_position_x+1][start_position_y]).on = true;
 
-//    println!("XD {}", cell.on);
-    println!("Tried to initialize grid. Cell at position x: {} and y: {} has value: {}", start_position_x, start_position_y, (grid[start_position_x][start_position_y]).on);
+    //BEACON
+    ((*grid)[start_position_x-1][start_position_y-1]).on = true;
+    ((*grid)[start_position_x-1][start_position_y]).on = true;
+    ((*grid)[start_position_x-2][start_position_y-1]).on = true;
+
+    ((*grid)[start_position_x-4][start_position_y+2]).on = true;
+    ((*grid)[start_position_x-3][start_position_y+2]).on = true;
+    ((*grid)[start_position_x-4][start_position_y+1]).on = true;
+
+//    println!()
 }
 
 fn start_game(mut grid: [[Cell; 8]; 8]) {
     use std::{thread, time};
     initialize_grid(&mut grid, 4 as usize,4 as usize);
-    println!("After initializing grid, cell at position x: {} and y: {} has value: {}", 4, 4, (grid[4][4]).on);
 
     while true == true {
-        grid = game_tick(grid);
         render_game_view(grid);
+        grid = game_tick(grid);
         thread::sleep(time::Duration::from_millis(1000));
     }
 }
 
 fn game_tick(mut grid: [[Cell; 8]; 8]) -> [[Cell;8] ;8] {
     let mut second_grid: [[Cell; 8]; 8] = [[Cell {on: false}; 8]; 8];
-    grid.clone_from_slice(&second_grid);
+    second_grid.clone_from_slice(&grid);
 
     for (index, col) in second_grid.iter_mut().enumerate() {
         for (sub_index, cell) in col.iter_mut().enumerate() {
-            (*cell).on = evaluate_cell_state(grid, index, sub_index);
-//            println!("Index 1: {}, Index 2: {}", index, sub_index);
+            cell.on = evaluate_cell_state(grid, index, sub_index);
         }
     }
-
 //    render_game_view(second_grid);
 
     return second_grid;
-//    let second_grid = [[Cell {on: false}; 8]; 8];
-//    grid.clone_from_slice(&second_grid);
-
-//    return second_grid
 }
 
 fn render_game_view(grid: [[Cell; 8]; 8]) {
     for (index, col) in grid.iter().enumerate() {
         for (sub_index, cell) in col.iter().enumerate() {
-            if index == 4 as usize && sub_index == 4 as usize {
-                print!("BINGO");
+            if cell.on {
+                print!("{}", '■');
+            } else {
+                print!("{}", '□');
             }
-//            print!("{}", if cell.on { 'x' } else { 'o' });
         }
-
         println!();
     }
 }
@@ -82,6 +84,7 @@ fn render_game_view(grid: [[Cell; 8]; 8]) {
 fn evaluate_cell_state(mut grid: [[Cell; 8]; 8], x: usize, y: usize) -> bool {
     let cell: Cell = grid[x][y];
     let neighbour_count: usize = get_live_neighbour_count(grid, x, y);
+
     if cell.on {
         if neighbour_count < 2 || neighbour_count > 3 {
             return false;
@@ -102,12 +105,17 @@ fn get_neighbours(grid: [[Cell; 8]; 8], x: usize, y:usize) -> Vec<Cell> {
 
     let horizontal_neighbours: Vec<Cell> = get_horizontal_neighbours(grid, x, y);
     let vertical_neighbours: Vec<Cell> = get_vertical_neighbours(grid, x, y);
+    let diagonal_neighbours: Vec<Cell> = get_diagonal_neighbours(grid, x, y);
 
     for(index, neighbour) in horizontal_neighbours.iter().enumerate() {
         neighbours.push(*neighbour);
     }
 
     for(index, neighbour) in vertical_neighbours.iter().enumerate() {
+        neighbours.push(*neighbour);
+    }
+
+    for(index, neighbour) in diagonal_neighbours.iter().enumerate() {
         neighbours.push(*neighbour);
     }
 
@@ -142,16 +150,45 @@ fn get_vertical_neighbours(grid: [[Cell; 8]; 8], x: usize, y: usize) -> Vec<Cell
     return vertical_neighbours;
 }
 
+fn get_diagonal_neighbours(grid: [[Cell; 8]; 8], x: usize, y: usize) -> Vec<Cell> {
+    let mut diagonal_neighbours: Vec<Cell> = Vec::new();
+
+    if x > 0 && y < 7 {
+        diagonal_neighbours.push(grid[x-1][y+1]);
+    }
+
+    if x < 7 && y < 7 {
+        diagonal_neighbours.push(grid[x+1][y+1]);
+    }
+
+    if y > 0 && x > 0 {
+        diagonal_neighbours.push(grid[x-1][y-1]);
+    }
+
+    if y > 0 && x < 7 {
+        diagonal_neighbours.push(grid[x+1][y-1]);
+    }
+
+    return diagonal_neighbours;
+}
+
 fn get_live_neighbour_count(grid: [[Cell; 8]; 8], x: usize, y: usize) -> usize {
     let neighbours: Vec<Cell> = get_neighbours(grid, x, y);
 
     let mut live_neighbours: usize = 0;
 
     for(index, neighbour) in neighbours.iter().enumerate() {
+//        if x == 4 as usize && y == 4 as usize {
+//            println!("Left Cell is {}", grid[3][4].on);
+//            println!("Centre Cell is {}", grid[4][4].on);
+//            println!("Right Cell is {}", grid[5][4].on);
+//        }
         if neighbour.on {
             live_neighbours += 1;
         }
     }
+
+//    println!("Cell at {} {} has {} live neighbours", x, y, live_neighbours);
 
     return live_neighbours;
 }

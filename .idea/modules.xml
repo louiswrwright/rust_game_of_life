@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/hi.iml" filepath="$PROJECT_DIR$/hi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/rust_game_of_life.iml" filepath="$PROJECT_DIR$/.idea/rust_game_of_life.iml" />
     </modules>
   </component>
 </project>
